@@ -1,0 +1,45 @@
+name: Build Go Binaries
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go environment
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+        check-latest: true
+
+    - name: Build for Linux (amd64)
+      env:
+        GOOS: linux
+        GOARCH: amd64
+      run: |
+        go build -trimpath -ldflags="-s -w" -o cfnat-linux-amd64 cfnat.go
+
+    - name: Build for Windows (amd64)
+      env:
+        GOOS: windows
+        GOARCH: amd64
+      run: |
+        go build -trimpath -ldflags="-s -w" -o cfnat-windows-amd64.exe cfnat.go
+
+    - name: Upload Linux Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: cfnat-linux-amd64
+        path: cfnat-linux-amd64
+
+    - name: Upload Windows Artifact
+      uses: actions/upload-artifact@v4
+        name: cfnat-windows-amd64
+        path: cfnat-windows-amd64.exe
